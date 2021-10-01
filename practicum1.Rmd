@@ -1,0 +1,703 @@
+---
+title: "Practicum1"
+author: "Sahand Tebyani" 
+output:
+  html_notebook: default
+  pdf_document: default
+---
+https://github.com/sahandtebyani
+
+# Q1: ERD
+In the following image you can see my ERD for the given data:
+```{r, echo=FALSE, out.width="50%", fig.cap="A nice image."}
+knitr::include_graphics("C:/Users/sahan/Downloads/Practicum1.png")
+```
+
+
+
+# Q2: Schema Realization
+## AWS Connection
+
+```{r}
+library(RMySQL)
+
+# Setting
+db_user <- 'Farper'
+db_password <- 'Farzad_Nasim_97'
+db_name <- 'practicum1DB'
+db_table <- 'courses'
+db_host <- 'cs5200-farzad.c703uobhpptp.us-east-2.rds.amazonaws.com'
+db_port <- 3306
+
+# Read data from db
+Mydb <- dbConnect(MySQL(), user = db_user, password = db_password,
+                  dbname = db_name, host = db_host, port = db_port)
+```
+
+## Defining tables and constraints:
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS AircraftSize;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE AircraftSize (
+  sizeId INTEGER NOT NULL,
+  IsLarge VARCHAR(32) NOT NULL,
+  PRIMARY KEY (sizeId)
+  );
+```
+
+```{sql connection=Mydb}
+INSERT INTO AircraftSize
+  VALUES
+    (0, 'UNKNOWN'),
+    (1, 'Yes'),
+    (2, 'No');
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS Aircraft;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE Aircraft (
+  aircraftId INTEGER NOT NULL,
+  aircraftType VARCHAR(32) NOT NULL,
+  aircraftModel VARCHAR(32) NOT NULL,
+  engineNumber INTEGER NOT NULL DEFAULT 2,
+  sizeId INTEGER NOT NULL,
+  PRIMARY KEY (aircraftId),
+  FOREIGN KEY (sizeId) REFERENCES AircraftSize(sizeId) ON DELETE CASCADE
+);
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS Flight;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE Flight (
+  flightId INTEGER NOT NULL,
+  airportName VARCHAR(32) NOT NULL,
+  flightDate DATE NOT NULL,
+  airline VARCHAR(32) NOT NULL,
+  aircraftId INTEGER NOT NULL,
+  PRIMARY KEY (flightId),
+  FOREIGN KEY (aircraftId) REFERENCES Aircraft(aircraftId) ON DELETE CASCADE
+);
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS Warning;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE Warning (
+  warningId INTEGER NOT NULL,
+  pilotWarned VARCHAR(32) NOT NULL,
+  PRIMARY KEY (warningId)
+);
+```
+
+```{sql connection=Mydb}
+INSERT INTO Warning
+  VALUES
+    (0, 'UNKNOWN'),
+    (1, 'Yes'),
+    (2, 'No');
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS WeatherCondition;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE WeatherCondition (
+  conditionId INTEGER NOT NULL,
+  conditions VARCHAR(32) NOT NULL,
+  PRIMARY KEY (conditionId)
+);
+```
+
+```{sql connection=Mydb}
+INSERT INTO WeatherCondition
+  VALUES 
+    (0, 'UNKNOWN'),
+    (1, 'Overcast'),
+    (2, 'No Cloud'),
+    (3, 'Some Cloud');
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS Precipitation;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE Precipitation (
+  precipitationId INTEGER NOT NULL,
+  precipitations VARCHAR(32) NOT NULL,
+  PRIMARY KEY (precipitationId)
+);
+```
+
+```{sql connection=Mydb}
+INSERT INTO Precipitation
+  VALUES
+    (0, 'UNKNOWN'),
+    (1, 'None'),
+    (2, 'Snow'),
+    (3, 'Fog'),
+    (4, 'Rain'),
+    (5, 'Rain, Snow'),
+    (6, 'Fog, Rain');
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS AccidentEffect;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE AccidentEffect (
+  effectId INTEGER NOT NULL,
+  effectToFlight VARCHAR(32) NOT NULL,
+  PRIMARY KEY (effectId)
+);
+```
+
+```{sql connection=Mydb}
+INSERT INTO AccidentEffect
+  VALUES
+    (0, 'UNKNOWN'),
+    (1, 'None'),
+    (2, 'Precautionary Landing'),
+    (3, 'Aborted Take-Off'),
+    (4, 'Engin Shut Down'),
+    (5, 'Other');
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS Damage;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE Damage (
+  damageId INTEGER NOT NULL,
+  indicatedDamage VARCHAR(32) NOT NULL,
+  PRIMARY KEY (damageId)
+);
+```
+
+```{sql connection=Mydb}
+INSERT INTO Damage
+  VALUES
+    (0, 'UNKNOWN'),
+    (1, 'Caused Damage'),
+    (2, 'No Damage');
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS AccidentFlightPhase;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE AccidentFlightPhase (
+  phaseId INTEGER NOT NULL,
+  phases VARCHAR(32) NOT NULL,
+  PRIMARY KEY (phaseId)
+);
+```
+
+```{sql connection=Mydb}
+INSERT INTO AccidentFlightPhase
+  VALUES
+    (0, 'UNKNOWN'),
+    (1, 'climb'),
+    (2, 'Landing Roll'),
+    (3, 'Approach'),
+    (4, 'Take-Off Run'),
+    (5, 'Descent');
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS BirdSize;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE BirdSize (
+  sizeId INTEGER NOT NULL,
+  sizeClass VARCHAR(32) NOT NULL,
+  PRIMARY KEY (sizeId)
+);
+```
+
+```{sql connection=Mydb}
+INSERT INTO BirdSize
+  VALUES
+    (0, 'UNKNOWN'),
+    (1, 'Large'),
+    (2, 'Small'),
+    (3, 'Medium');
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS Bird;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE Bird (
+  birdId INTEGER NOT NULL,
+  species VARCHAR(32) NOT NULL,
+  sizeId INTEGER NOT NULL,
+  PRIMARY KEY (BirdId),
+  FOREIGN KEY (sizeId) REFERENCES BirdSize(sizeId) ON DELETE CASCADE
+);
+```
+
+```{sql connection=Mydb}
+DROP TABLE IF EXISTS Accident;
+```
+
+```{sql connection=Mydb}
+CREATE TABLE Accident (
+  accidentId INTEGER NOT NULL,
+  numberOfStrucks INTEGER NOT NULL,
+  warningId INTEGER NOT NULL,
+  effectId INTEGER NOT NULL,
+  damageId INTEGER NOT NULL,
+  state VARCHAR(32) NOT NULL,
+  cost INTEGER NOT NULL,
+  numberOfInjured INTEGER NOT NULL,
+  height INTEGER NOT NULL,
+  remarks VARCHAR(100) NOT NULL,
+  flightId INTEGER NOT NULL,
+  phaseID INTEGER NOT NULL,
+  conditionId INTEGER NOT NULL,
+  precipitationId INTEGER NOT NULL,
+  birdId INTEGER NOT NULL,
+  PRIMARY KEY (accidentId),
+  FOREIGN KEY (warningId) REFERENCES Warning(warningId) ON DELETE CASCADE,
+  FOREIGN KEY (effectId) REFERENCES AccidentEffect(effectId) ON DELETE CASCADE,
+  FOREIGN KEY (damageId) REFERENCES Damage(damageId) ON DELETE CASCADE,
+  FOREIGN KEY (flightId) REFERENCES Flight(flightId) ON DELETE CASCADE,
+  FOREIGN KEY (phaseId) REFERENCES AccidentFlightPhase(phaseId) ON DELETE CASCADE,
+  FOREIGN KEY (conditionId) REFERENCES WeatherCondition(conditionId) ON DELETE CASCADE,
+  FOREIGN KEY (precipitationId) REFERENCES Precipitation(precipitationId) ON DELETE CASCADE,
+  FOREIGN KEY (birdId) REFERENCES Bird(birdId) ON DELETE CASCADE
+);
+```
+
+# Q3: Populating the tables
+## Reading .CSV file and save it as a DF.
+The first step is to read .csv file and load it to a data frame. In this step I loaded it to 'df.raw' data frame as you can see below. Also, I modified column names to simplify the dataframe.
+
+```{r}
+col_names <- c("accidentId", "aircraftType", "airportName", "Altitude_bin", "aircraftModel", "numStruckCategory", "numberOfStrucks", "effectId", "flightDate", "damageId", "engineNumber", "airline", "state", "phaseId", "precipitationId", "RemainsCollected", "remainsSent", "remarks", "bsizeId", "conditionId", "species", "warningId", "cost", "height","numberOfInjured","sizeId")
+
+fn = "C:/Users/sahan/Downloads/databases/Practicum1/BirdStrikesData.csv"
+
+df.raw <- read.csv(file = fn,
+                   header = T,
+                   stringsAsFactors = F,
+                   col.names = col_names)
+df.raw[df.raw == ""] <- "MISSING"
+```
+
+## Data Frames for each table
+In order to clean the unnecessary data, I saved the above data frame into the new one, 'df.clean', to manipulate the data. First I set all the missing values to a new value 'MISSING' and then I changed the parameters in each column according to the look up tables to match the values.
+
+```{r}
+# Cleaning up the data frame by first saving it to a new data frame:
+df.clean <- df.raw
+
+# In order to have a unique id for each row of my new data frame, 
+# there is a 'accidentId' column to identify each row of the data frame/
+n.clean <- nrow(df.clean)
+df.clean[,1] <- seq(1, n.clean)
+
+# For the bad inputs where the data is null or empty we can replace them with 
+# the value 'MISSING' and then remove the rows that are useless
+for (r in 1:n.clean) {
+  a <- df.clean$accidentId[which(df.clean$airportName == "MISSING" &
+                               df.clean$flightDate == "MISSING" &
+                               df.clean$airline == "MISSING")]
+}
+df.clean = df.clean[-(a[1:length(a)]),]
+n.clean <- nrow(df.clean)
+df.clean[,1] <- seq(1, n.clean)
+
+# replacing the data to match 'AircraftSize' table:
+df.clean$sizeId[df.clean$sizeId == "MISSING"] <- 0
+df.clean$sizeId <- replace(df.clean$sizeId, df.clean$sizeId == "Yes",1)
+df.clean$sizeId <- replace(df.clean$sizeId, df.clean$sizeId == "No",2)
+df.clean$engineNumber[df.clean$engineNumber == "MISSING"] <- 2
+
+# replacing the data to match 'BirdSize' table:
+df.clean$bsizeId[df.clean$bsizeId == "MISSING"] <- 0
+df.clean$bsizeId <- replace(df.clean$bsizeId, df.clean$bsizeId == "Large",1)
+df.clean$bsizeId <- replace(df.clean$bsizeId, df.clean$bsizeId == "Small",2)
+df.clean$bsizeId <- replace(df.clean$bsizeId, df.clean$bsizeId == "Medium",3)
+
+# replacing the data to match 'Warning' table:
+df.clean$warningId[df.clean$warningId == "MISSING"] <- 0
+df.clean$warningId <- replace(df.clean$warningId, df.clean$warningId == "Y",1 )
+df.clean$warningId <- replace(df.clean$warningId, df.clean$warningId == "N",2 )
+
+# replacing the data to match 'AccidentEffect' table:
+df.clean$effectId[df.clean$effectId == "MISSING"] <- 0
+df.clean$effectId <- replace(df.clean$effectId, df.clean$effectId == "None",1 )
+df.clean$effectId <- replace(df.clean$effectId, df.clean$effectId == "Precautionary Landing",2 )
+df.clean$effectId <- replace(df.clean$effectId, df.clean$effectId == "Aborted Take-off",3 )
+df.clean$effectId <- replace(df.clean$effectId, df.clean$effectId == "Engine Shut Down",4 )
+df.clean$effectId <- replace(df.clean$effectId, df.clean$effectId == "Other",5 )
+
+# replacing the data to match 'Damage' table:
+df.clean$damageId[df.clean$damageId == "MISSING"] <- 0
+df.clean$damageId <- replace(df.clean$damageId, df.clean$damageId == "Caused damage",1)
+df.clean$damageId <- replace(df.clean$damageId, df.clean$damageId == "No damage",2)
+
+# replacing the data to match 'AccidentFlightPhase' table:
+df.clean$phaseId[df.clean$phaseId == "MISSING"] <- 0
+df.clean$phaseId <- replace(df.clean$phaseId, df.clean$phaseId == "Climb",1)
+df.clean$phaseId <- replace(df.clean$phaseId, df.clean$phaseId == "Landing Roll",2)
+df.clean$phaseId <- replace(df.clean$phaseId, df.clean$phaseId == "Approach",3)
+df.clean$phaseId <- replace(df.clean$phaseId, df.clean$phaseId == "Take-off run",4)
+df.clean$phaseId <- replace(df.clean$phaseId, df.clean$phaseId == "Descent",5)
+
+# replacing the data to match 'WeatherCondition' table:
+df.clean$conditionId[df.clean$conditiond == "MISSING"] <- 0
+df.clean$conditionId <- replace(df.clean$conditionId, df.clean$conditionId == "Overcast",1)
+df.clean$conditionId <- replace(df.clean$conditionId, df.clean$conditionId == "No Cloud",2)
+df.clean$conditionId <- replace(df.clean$conditionId, df.clean$conditionId == "Some Cloud",3)
+
+# replacing the data to match 'Precipitation' table:
+df.clean$precipitationId[df.clean$precipitationId == "MISSING"] <- 0
+df.clean$precipitationId <- replace(df.clean$precipitationId, df.clean$precipitationId == "None",1)
+df.clean$precipitationId <- replace(df.clean$precipitationId, df.clean$precipitationId == "Snow",2)
+df.clean$precipitationId <- replace(df.clean$precipitationId, df.clean$precipitationId == "Fog",3)
+df.clean$precipitationId <- replace(df.clean$precipitationId, df.clean$precipitationId == "Rain",4)
+df.clean$precipitationId <- replace(df.clean$precipitationId, df.clean$precipitationId == "Rain, Snow",5)
+df.clean$precipitationId <- replace(df.clean$precipitationId, df.clean$precipitationId == "Fog, Rain",6)
+
+```
+
+Below you can see the first 5 rows from 'df.clean':
+
+```{r}
+# Now we have the all necessary data in correct format and place in the dataframe
+head(df.clean)
+```
+
+Next step is to split the bulk data frame into smaller one in order to write them to the proper tables later as you can see in the following:
+
+### aircraft
+
+```{r extractAircraftData}
+library(sqldf)
+options(sqldf.driver = "SQLite")
+df.aircraft <- sqldf::sqldf("select 1 as aircraftId, aircraftType,
+                            aircraftModel, engineNumber, sizeId
+                            from 'df.clean'")
+
+# assign an artificial PK
+n.aircraft <- nrow(df.aircraft)
+df.aircraft[,1] <- as.integer(2100 + seq(1, n.aircraft))
+```
+
+```{r}
+head(df.aircraft)
+```
+
+
+### flight
+
+```{r extractFlightData}
+library(sqldf)
+options(sqldf.driver = "SQLite")
+df.flight <- sqldf::sqldf("select 1 as flightId, airportName, flightDate, airline, 1 as aircraftId from 'df.clean'")
+df.flight$flightDate = as.Date(df.flight$flightDate, '%m/%d/%Y')
+
+# assign an artificial PK
+n.flight <- nrow(df.flight)
+df.flight[,1] <- seq(1, n.flight)
+```
+
+The important thing is to connect PK/FK in to tables that have relation. I did it by using a for loop and connecting the matching rows with proper PK/FK link.
+
+```{r linkFKs1}
+# let's link each aircraft to the correct flight by assigning the FK to the 
+# correct PK
+
+for (r in 1:n.flight) {
+  b <- df.aircraft$aircraftId[which(df.aircraft$aircraftType == df.clean$aircraftType &
+                                      df.aircraft$aircraftModel == df.clean$aircraftModel &
+                                      df.aircraft$engineNumber == df.clean$engineNumber &
+                                      df.aircraft$sizeId == df.clean$sizeId)]
+  
+  df.flight$aircraftId[r] <- b[r]
+}
+```
+
+```{r}
+# flight data frame with all necessary information
+head(df.flight)
+```
+
+### bird
+
+```{r extractBirdData}
+library(sqldf)
+options(sqldf.driver = "SQLite")
+df.bird <- sqldf::sqldf("select 1 as birdId, species, bsizeId
+                            from 'df.clean'")
+
+# assign an artificial PK
+n.bird <- nrow(df.bird)
+df.bird[,1] <- as.integer(100 + seq(1, n.bird))
+```
+
+```{r}
+head(df.bird)
+```
+
+
+### accident
+
+```{r extractAccidentData}
+library(sqldf)
+options(sqldf.driver = "SQLite")
+df.accident <- sqldf::sqldf("select 1 as accidentId, numberOfStrucks, 
+                              warningId, effectId, damageId, state, cost,
+                              numberOfInjured, height, remarks, 12 as flightId,
+                              phaseId, conditionId,
+                              precipitationId, 16 as birdId
+                              from 'df.clean'")
+
+# assign an artificial PK
+n.accident <- nrow(df.accident)
+df.accident[,1] <- as.integer(1000 + seq(1, n.bird))
+```
+
+```{r linkFKs2}
+# let's link each accident to the correct flight by assigning the FK to the 
+# correct PK
+df.clean$flightDate = as.Date(df.clean$flightDate, '%m/%d/%Y')
+for (r in 1:n.accident) {
+  d <- df.flight$flightId[which(df.flight$airportName == df.clean$airportName &
+                                  df.flight$flightDate == df.clean$flightDate &
+                                  df.flight$airline == df.clean$airline)]
+  
+  df.accident$flightId[r] <- d[r]
+}
+
+```
+
+```{r linkFKs3}
+# let's link each accident to the bird by assigning the FK to the 
+# correct PK
+for (r in 1:n.accident) {
+  c <- df.bird$birdId[which(df.bird$species == df.clean$species &
+                              df.bird$bsizeId == df.clean$bsizeId)]
+  
+  df.accident$birdId[r] <- c[r]
+}
+```
+
+```{r}
+head(df.accident)
+```
+
+## POPULATING TABLES
+Lastly, we can use above data frames to write data into our database tables.
+
+### Accident
+```{r}
+dbWriteTable(Mydb, "Accident", df.accident, overwrite=TRUE, row.names = FALSE,field.types = c(accidentId="INTEGER",numberOfStrucks="INTEGER",warningId="INTEGER", effectId="INTEGER",damageId='INTEGER',state="VARCHAR(32)", cost="INTEGER", numberOfInjured="INTEGER", height="INTEGER", remarks="VARCHAR(100)", flightId="INTEGER", phaseId="INTEGER", conditionId="INTEGER",precipitationId="INTEGER", birdId="INTEGER"))
+```
+
+```{sql connection=Mydb}
+SELECT * FROM Accident
+```
+
+
+### Flight
+
+```{r}
+dbWriteTable(Mydb, "Flight", df.flight, overwrite=TRUE, row.names = FALSE,field.types = c(flightId="INTEGER", airportName="VARCHAR(32)",flightDate="DATE", airline="VARCHAR(32)", aircraftId="INTEGER"))
+```
+
+```{sql connection=Mydb}
+SELECT * FROM Flight
+```
+
+### Aircraft
+
+```{r}
+dbWriteTable(Mydb, "Aircraft", df.aircraft, overwrite=TRUE, row.names = FALSE,field.types = c(aircraftId="INTEGER",aircraftType="VARCHAR(32)",aircraftModel="VARCHAR(32)", engineNumber="INTEGER", sizeId="INTEGER"))
+```
+
+```{sql connection=Mydb}
+SELECT * FROM Aircraft
+```
+
+### Bird
+
+```{r}
+dbWriteTable(Mydb, "Bird", df.bird, overwrite=TRUE, row.names = FALSE,field.types = c(birdId="INTEGER",species="VARCHAR(32)",bsizeId="INTEGER"))
+```
+
+```{sql connection=Mydb}
+SELECT * FROM Bird
+```
+
+# Q4:
+```{sql connection=Mydb}
+SELECT f.airline AS Airline, COUNT(a.accidentId) AS NumStrikes FROM Accident a
+  INNER JOIN AccidentFlightPhase afp 
+    ON a.phaseId = afp.phaseId
+  INNER JOIN Flight f
+    ON f.flightId = a.flightId
+      WHERE (afp.phaseId = 1 or afp.phaseId = 4)
+      GROUP BY f.airline
+      ORDER BY f.airline ASC;
+```
+# Q5
+```{sql connection=Mydb}
+SELECT f.airportName AS Airport, COUNT(a.accidentId) AS NumStrikes FROM Accident a
+    INNER JOIN Flight f
+      ON f.flightId = a.flightId
+      GROUP BY Airport
+      HAVING NumStrikes IN (
+                          SELECT MAX(b.NumStrikes) AS NumStrikes FROM 
+                          (SELECT f.airportName AS Airport, COUNT(a.accidentId) AS NumStrikes FROM Accident a
+                              INNER JOIN Flight f
+                                ON f.flightId = a.flightId
+                                  GROUP BY Airport) b);
+        
+```
+# Q6
+```{sql connection=Mydb}
+SELECT year(f.flightDate) AS Year, COUNT(a.accidentId) AS NumStrikes FROM Accident a
+  INNER JOIN Flight f
+    ON f.flightId = a.flightId
+      GROUP BY Year
+```
+# Q7
+For this question, First I made a dataframe with all the necessary values.
+
+```{r}
+sqlCmd = "SELECT year(f.flightDate) AS Year, COUNT(a.accidentId) AS NumStrikes_take_off_climbing FROM Accident a
+            INNER JOIN AccidentFlightPhase afp 
+              ON a.phaseId = afp.phaseId
+            INNER JOIN Flight f
+              ON f.flightId = a.flightId
+                WHERE (afp.phaseId = 1 or afp.phaseId = 4)
+                GROUP BY Year
+                HAVING Year BETWEEN 2008 AND 2011"
+rs = dbGetQuery(Mydb, sqlCmd)
+
+sqlCmd2 = "SELECT year(f.flightDate) AS Year, COUNT(a.accidentId) AS NumStrikes FROM Accident a
+            INNER JOIN AccidentFlightPhase afp 
+              ON a.phaseId = afp.phaseId
+            INNER JOIN Flight f
+              ON f.flightId = a.flightId
+                WHERE (afp.phaseId = 2 or afp.phaseId = 3 or afp.phaseId = 5)
+                GROUP BY Year
+                HAVING Year BETWEEN 2008 AND 2011"
+rs2 = dbGetQuery(Mydb, sqlCmd2)
+rs$NumStrikes_descent_approach_landing <- rs2$NumStrikes
+
+```
+
+You can see the number of incidents for desired phases grouped by year in the following R chunk:
+```{r}
+rs
+```
+
+Below is the bar plot to compare the number of incidents in this to group by year.
+```{r}
+barplot(t(rs[c('NumStrikes_take_off_climbing', 'NumStrikes_descent_approach_landing')]), names.arg = c("2008","2009","2010","2011"), main = 'Number of bird strikes incidents per year from 2008 to 2011 during take-off/climbing and during descent/approach/landing', cex.main = 0.7, ylab='Number of Strikes', xlab='Year', beside=T, col = c("lightblue","lightgreen"), legend.text = row.names(t(rs[c('NumStrikes_take_off_climbing', 'NumStrikes_descent_approach_landing')])), args.legend = list(x = "topleft", legend = c("Take-Off/Climbing","Descent/Approach/Landing"), cex = 0.6))
+
+
+```
+
+# Q8
+For this question I defined a stored procedure that takes in flightId and removes every data related to that flight from the data base. This procedure looks for the FK/PK in the tables and removes anything related to them. 
+
+```{sql connection=Mydb}
+DROP PROCEDURE IF EXISTS DeleteBirdStricksByFlightId;
+```
+
+```{sql connection=Mydb}
+CREATE PROCEDURE DeleteBirdStricksByFlightId(
+  IN FlightNum INTEGER
+)
+BEGIN
+        DECLARE aircraftsss INT DEFAULT 0;
+        DECLARE birdsss INT DEFAULT 0;
+        
+  SELECT aircraftId 
+  INTO aircraftsss 
+  FROM Flight 
+  WHERE flightId = FlightNum;
+  
+  DELETE FROM Aircraft
+  WHERE aircraftsss = aircraftId;
+  
+  DELETE FROM Flight
+  WHERE flightId = FlightNum;
+  
+  SELECT birdId 
+  INTO birdsss 
+  FROM Accident
+  WHERE flightId = FlightNum;
+  
+  DELETE FROM Bird
+  WHERE birdsss = birdId;
+  
+  DELETE FROM Accident
+  WHERE flightId = FlightNum;
+END;
+```
+
+To see if the stored procedure works properly, we can compare the tables before and after calling it. Below you can see the Accident table:
+
+```{sql connection=Mydb}
+SELECT * FROM Accident;
+```
+
+```{sql connection=Mydb}
+CALL DeleteBirdStricksByFlightId(2)
+```
+
+And below is the same Accident table after calling the stored procedure:
+```{sql connection=Mydb}
+SELECT * FROM Accident;
+```
+You can see that the row which contained the given flightId has been removed from the table. In order to confirm that it applies to all the related tables in the database, below you can see the other tables with removed data related to the given flightId:
+```{sql connection=Mydb}
+SELECT * FROM Aircraft;
+```
+
+```{sql connection=Mydb}
+SELECT * FROM Flight;
+```
+
+
+
+```{sql connection=Mydb}
+SELECT * FROM Bird;
+```
+
+Since we diceded to remove the data related to flightId = 2, at this point our data base will miss all the data about this flightId.
+
+```{r}
+dbDisconnect(Mydb)
+```
+
+
+
+
+
+
+
