@@ -22,12 +22,12 @@ knitr::include_graphics("C:/Users/sahan/Downloads/Practicum1.png")
 library(RMySQL)
 
 # Setting
-db_user <- 'Farper'
-db_password <- 'Farzad_Nasim_97'
-db_name <- 'practicum1DB'
+db_user <- *******
+db_password <- ********
+db_name <- ************
 db_table <- 'courses'
-db_host <- 'cs5200-farzad.c703uobhpptp.us-east-2.rds.amazonaws.com'
-db_port <- 3306
+db_host <- '*******************.rds.amazonaws.com'
+db_port <- ****
 
 # Read data from db
 Mydb <- dbConnect(MySQL(), user = db_user, password = db_password,
